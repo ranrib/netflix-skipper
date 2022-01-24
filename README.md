@@ -9,4 +9,4 @@ Once the extension is installed, reload or open a Netflix Tab, and it will work 
 
 ![Config](images/config.png)
 
-This plugin supports ALL Netflix languages!
+This extension supports ALL Netflix languages!
