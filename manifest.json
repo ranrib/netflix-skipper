@@ -16,7 +16,7 @@
       "run_at": "document_end"
     }
   ],
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": ["storage", "activeTab"],
   "action": {
     "default_popup": "src/popup.html",
     "default_icon": {
