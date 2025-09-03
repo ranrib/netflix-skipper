@@ -75,12 +75,29 @@ function updateExemptList() {
     return;
   }
   
-  exemptListDiv.innerHTML = exemptTitles.map(title => `
-    <div class="exempt-item">
-      <span style="flex: 1; margin-right: 8px;">${title}</span>
-      <button class="remove-item" onclick="removeExemptTitle('${title.replace(/'/g, "\\'")}')">×</button>
-    </div>
-  `).join('');
+  // Clear the container first
+  exemptListDiv.innerHTML = '';
+  
+  // Create each exempt item with proper event listeners
+  exemptTitles.forEach((title, index) => {
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'exempt-item';
+    
+    const titleSpan = document.createElement('span');
+    titleSpan.style.flex = '1';
+    titleSpan.style.marginRight = '8px';
+    titleSpan.textContent = title;
+    
+    const removeButton = document.createElement('button');
+    removeButton.className = 'remove-item';
+    removeButton.textContent = 'X';
+    removeButton.title = `Remove "${title}" from exempt list`;
+    removeButton.addEventListener('click', () => removeExemptTitle(title));
+    
+    itemDiv.appendChild(titleSpan);
+    itemDiv.appendChild(removeButton);
+    exemptListDiv.appendChild(itemDiv);
+  });
 }
 
 // Function to remove a title from exempt list

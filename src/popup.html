@@ -31,6 +31,9 @@
         font-size: 11px;
         word-wrap: break-word;
       }
+      .current-title span {
+        font-weight: bold;
+      }
       .toggle-button {
         width: 100%;
         padding: 8px;
@@ -79,6 +82,19 @@
         padding: 2px 6px;
         cursor: pointer;
         font-size: 10px;
+        transition: all 0.2s ease;
+        min-width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .remove-item:hover {
+        background: #cc0000;
+        transform: scale(1.1);
+      }
+      .remove-item:active {
+        transform: scale(0.95);
       }
       .github-link {
         margin-top: 10px;
@@ -104,13 +120,13 @@
         <label for="skip-next">Skip Next Episode</label>
       </div>
     </div>
-
+    <div class="current-title">
+      Playing: <span id="current-title">Loading...</span>
+    </div>
     <div class="section exempt-controls">
       <div class="section-title">Exempt List</div>
       <div id="current-title-container" style="display: none;">
-        <div class="current-title">
-          Current: <span id="current-title">Loading...</span>
-        </div>
+        
         <button id="toggle-exempt" class="toggle-button disabled-button" disabled>
           Loading...
         </button>
