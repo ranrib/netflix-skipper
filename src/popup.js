@@ -1,6 +1,7 @@
 let skipIntroCheckbox = document.getElementById("skip-intro");
 let skipRecapCheckbox = document.getElementById("skip-recap");
 let skipNextCheckbox = document.getElementById("skip-next");
+let noSkipFirstCheckbox = document.getElementById("no-skip-first");
 let toggleExemptButton = document.getElementById("toggle-exempt");
 let currentTitleSpan = document.getElementById("current-title");
 let currentTitleContainer = document.getElementById("current-title-container");
@@ -21,6 +22,10 @@ skipRecapCheckbox.addEventListener("click", async () => {
 
 skipNextCheckbox.addEventListener("click", async () => {
   chrome.storage.local.set({ skipNext: skipNextCheckbox.checked });
+});
+
+noSkipFirstCheckbox.addEventListener("click", async () => {
+  chrome.storage.local.set({ noSkipFirst: noSkipFirstCheckbox.checked });
 });
 
 // Exempt list functionality
@@ -187,8 +192,8 @@ async function getCurrentTitle() {
 async function initializePopup() {
   // Load general settings
   chrome.storage.local.get(
-    ["skipIntro", "skipRecap", "skipNext"],
-    ({ skipIntro, skipRecap, skipNext }) => {
+    ["skipIntro", "skipRecap", "skipNext", "noSkipFirst"],
+    ({ skipIntro, skipRecap, skipNext, noSkipFirst }) => {
       if (skipIntro) {
         skipIntroCheckbox.checked = true;
       }
@@ -197,6 +202,9 @@ async function initializePopup() {
       }
       if (skipNext) {
         skipNextCheckbox.checked = true;
+      }
+      if (noSkipFirst) {
+        noSkipFirstCheckbox.checked = true;
       }
     }
   );

@@ -2,8 +2,9 @@ const INTRO_UIA = "player-skip-intro";
 const RECAP_UIA = "player-skip-recap";
 const NEXT_UIA = "next-episode-seamless-button";
 const NEXT_DRAIN_UIA = "next-episode-seamless-button-draining";
+const CREDITS_UIA = "watch-credits-seamless-button";
 
-const BUTTONS = [INTRO_UIA, RECAP_UIA, NEXT_UIA, NEXT_DRAIN_UIA];
+const BUTTONS = [INTRO_UIA, RECAP_UIA, NEXT_UIA, NEXT_DRAIN_UIA, CREDITS_UIA];
 
 // Function to extract the current Netflix title
 function getCurrentTitle() {
@@ -32,36 +33,67 @@ function getCurrentTitle() {
   return null;
 }
 
+// Function that checks if the episode is first
+async function isCurrentFirstEpisode() {
+  //If chrome.storage.local has isFirstEpisode, return it to avoid unnecessary DOM queries
+  //Else, check the DOM and set the value in storage for future reference
+  let isFirstEpisode = false;
+  const result = await new Promise((resolve) => {
+    chrome.storage.local.get(["isFirstEpisode"], resolve);
+  });
+
+  if (result.isFirstEpisode !== undefined) {
+    isFirstEpisode = result.isFirstEpisode;
+  }
+
+  const titleElement = document.querySelectorAll("[data-uia='video-title']")[0];
+
+  if (titleElement) {
+    // Try to get the episode number from the span element within the title element
+    const spanElement = titleElement.querySelector("span");
+    // If it's first episode, the element will be like E1.
+    isFirstEpisode = !!(spanElement && spanElement.textContent.trim().startsWith("E1"));
+    chrome.storage.local.set({ isFirstEpisode });
+  }
+  return isFirstEpisode;
+}
+
 async function skipper() {
   try {
-    chrome.storage.local.get(
-      ["skipIntro", "skipRecap", "skipNext", "exemptTitles"],
-      ({ skipIntro, skipRecap, skipNext, exemptTitles = [] }) => {
-        // Check if current title is in exempt list
-        const currentTitle = getCurrentTitle();
-        const isExempt = currentTitle && exemptTitles.includes(currentTitle);
-        
-        // If title is exempt, don't skip anything
-        if (isExempt) {
-          return;
-        }
-        
-        const mapper = {
-          [INTRO_UIA]: skipIntro,
-          [RECAP_UIA]: skipRecap,
-          [NEXT_UIA]: skipNext,
-          [NEXT_DRAIN_UIA]: skipNext,
-        };
-        BUTTONS.forEach((uia) => {
-          const button = Object.values(
-            document.getElementsByTagName("button")
-          ).find((elem) => elem.getAttribute("data-uia") === uia);
-          if (button && mapper[uia]) {
-            button.click();
-          }
-        });
+    const { skipIntro, skipRecap, skipNext, noSkipFirst, exemptTitles = [] } =
+      await new Promise((resolve) => {
+        chrome.storage.local.get(
+          ["skipIntro", "skipRecap", "skipNext", "noSkipFirst", "exemptTitles"],
+          resolve
+        );
+      });
+
+    // Check if current title is in exempt list
+    const currentTitle = getCurrentTitle();
+    const isExempt = currentTitle && exemptTitles.includes(currentTitle);
+
+    // If title is exempt, don't skip anything
+    if (isExempt) {
+      return;
+    }
+
+    const isFirstEpisode = noSkipFirst ? await isCurrentFirstEpisode() : false;
+
+    const mapper = {
+      [INTRO_UIA]: skipIntro && !isFirstEpisode,
+      [RECAP_UIA]: skipRecap,
+      [NEXT_UIA]: skipNext && !isFirstEpisode,
+      [NEXT_DRAIN_UIA]: skipNext && !isFirstEpisode,
+      [CREDITS_UIA]: !skipNext || isFirstEpisode,
+    };
+    BUTTONS.forEach((uia) => {
+      const button = Object.values(
+        document.getElementsByTagName("button")
+      ).find((elem) => elem.getAttribute("data-uia") === uia);
+      if (button && mapper[uia]) {
+        button.click();
       }
-    );
+    });
   } catch (err) {
     console.error(err);
   }
